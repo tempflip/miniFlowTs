@@ -32,6 +32,13 @@ class MfLinear extends MfNode {
 	constructor(xNode, wNode, bNode) {
 		super([xNode, wNode, bNode]);
 	}
+
+	forward() : void {
+		var x = this.inboundNodes[0].value;
+		var w = this.inboundNodes[1].value;
+		var b = this.inboundNodes[2].value;
+		this.value = x * w + b;
+	}
 }
 
 
@@ -46,6 +53,9 @@ var b2 = new MfInput(0.2);
 var lin1 = new MfLinear(x, w1, b1);
 var lin2 = new MfLinear(lin1, w2, b2);
 
-console.log(lin1.inboundNodes);
-console.log(lin2.inboundNodes);
+lin1.forward();
+lin2.forward();
+
+console.log(lin1);
+console.log(lin2);
 
