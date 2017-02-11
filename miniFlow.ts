@@ -18,6 +18,8 @@ class MfNode {
 		}
 	}
 
+	forward() : void {}
+
 }
 
 class MfInput extends MfNode {
@@ -69,9 +71,7 @@ function topologicalSort(nodeList: MfNode[]) {
 			nl.push(m)
 		}
 	}
-	
 	//console.log(G);
-
 
 	for (var n of nodeList) nl.push(n);
 
@@ -87,13 +87,15 @@ function topologicalSort(nodeList: MfNode[]) {
 			}
 		}
 	}	
-
-
-
 	//console.log(L);
 	return L;
 }
 
+function forwardAndBackward(graph) {
+	for (var n of graph) {
+		n.forward();
+	}
+}
 ///// test
 
 
@@ -105,18 +107,18 @@ var b1 = new MfInput(5);
 var w2 = new MfInput(0.1);
 var b2 = new MfInput(0.2);
 
+var w3 = new MfInput(2)
+var b3 = new MfInput(0.6)
+
 var lin1 = new MfLinear(x, w1, b1);
 var lin2 = new MfLinear(lin1, w2, b2);
+var lin3 = new MfLinear(lin2, w3, b3);
 
 //var graph = topologicalSort([x, w1, b1, w2, b2, lin1, lin2]);
-var graph = topologicalSort([x, w1, b1, w2, b2]);
+var graph = topologicalSort([x, w1, b1, w2, b2, w3, b3]);
+forwardAndBackward(graph);
 
 
-console.log(graph);
-/*
-lin1.forward();
-lin2.forward();
-
-console.log(lin1);
-console.log(lin2);
-*/
+console.log(lin1.value);
+console.log(lin2.value);
+console.log(lin3.value);
