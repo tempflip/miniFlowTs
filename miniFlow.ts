@@ -36,20 +36,52 @@ class MfInput extends MfNode {
 		this.value = value;
 	}
 
+	backward() : void {
+		let gra = 0;
+		for (var n of this.outboundNodes) {
+			gra += n.gradients[this._key]
+		}
+		this.gradients[this._key] = gra;
+
+		console.log('###', this.gradients);
+	}
 
 }
 
 class MfLinear extends MfNode {
+	x : MfNode;
+	w : MfNode;
+	b : MfNode;
 
 	constructor(xNode, wNode, bNode) {
 		super([xNode, wNode, bNode]);
+		this.x = xNode;
+		this.w = wNode;
+		this.b = bNode;
 	}
 
 	forward() : void {
-		let x = this.inboundNodes[0].value;
-		let w = this.inboundNodes[1].value;
-		let b = this.inboundNodes[2].value;
-		this.value = x * w + b;
+		//let x = this.inboundNodes[0].value;
+		//let w = this.inboundNodes[1].value;
+		//let b = this.inboundNodes[2].value;
+		this.value = this.x.value * this.w.value + this.b.value;
+	}
+
+	backward() : void {
+		this.gradients[this.x._key] = 0;
+		this.gradients[this.w._key] = 0;
+		this.gradients[this.b._key] = 0;
+		
+		for (var n of this.outboundNodes) {
+			let cost = n.gradients[this._key];
+
+			this.gradients[this.x._key] += this.w.value * cost; 
+			this.gradients[this.w._key] += this.x.value * cost;
+			this.gradients[this.b._key] += cost;
+
+		}
+
+		console.log('$$$', this.gradients);		
 	}
 }
 
