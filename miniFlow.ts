@@ -6,11 +6,14 @@ class MfNode {
 	value : number;
 	inboundNodes : MfNode[];
 	outboundNodes : MfNode[];
+	gradients : any;
 
 	constructor(inboundNodes : MfNode[]) {
 		this.value = null;
 		this.inboundNodes = inboundNodes;
 		this.outboundNodes = [];
+		this.gradients = {};
+
 		this._key = MFNODE_KEY_COUNT;
 		NODE_MAP[this._key] = this;
 		MFNODE_KEY_COUNT ++;
@@ -21,6 +24,8 @@ class MfNode {
 	}
 
 	forward() : void {}
+
+	backward() : void {}
 
 }
 
@@ -46,6 +51,26 @@ class MfLinear extends MfNode {
 		let b = this.inboundNodes[2].value;
 		this.value = x * w + b;
 	}
+}
+
+class MfMSE extends MfNode {
+	constructor(actualValueNode : MfNode, predictedValueNode : MfNode) {
+		super([actualValueNode, predictedValueNode]);
+	}
+
+	forward() : void {
+		let mse = Math.pow((this.inboundNodes[0].value - this.inboundNodes[1].value), 2);
+		this.value = mse;
+	}
+
+	backward() : void {
+		let a = this.inboundNodes[0];
+		let y = this.inboundNodes[1];
+
+		this.gradients[a._key] = y.value - a.value;
+		this.gradients[y._key] = -1. *(y.value - a.value);
+	}
+
 }
 
 function topologicalSort(nodeList: MfNode[]) {
@@ -97,12 +122,18 @@ function forwardAndBackward(graph) {
 	for (var n of graph) {
 		n.forward();
 	}
+
+	for (var i = graph.length-1 ; i >= 0; i--) {
+		graph[i].backward();
+	}
 }
 ///// test
 
 
 
 var x = new MfInput(10);
+var y = new MfInput(15);
+
 var w1 = new MfInput(4);
 var b1 = new MfInput(5);
 
@@ -115,12 +146,15 @@ var b3 = new MfInput(0.6)
 var lin1 = new MfLinear(x, w1, b1);
 var lin2 = new MfLinear(lin1, w2, b2);
 var lin3 = new MfLinear(lin2, w3, b3);
-
+var mse = new MfMSE(y, lin3);
 //var graph = topologicalSort([x, w1, b1, w2, b2, lin1, lin2]);
-var graph = topologicalSort([x, w1, b1, w2, b2, w3, b3]);
+var graph = topologicalSort([x, w1, b1, w2, b2, w3, b3, y]);
 forwardAndBackward(graph);
 
 
 console.log(lin1.value);
 console.log(lin2.value);
 console.log(lin3.value);
+console.log(mse.value);
+
+console.log(mse.gradients);
