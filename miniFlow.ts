@@ -1,4 +1,5 @@
 var MFNODE_KEY_COUNT = 0;
+var NODE_MAP = {};
 
 class MfNode {
 	_key : number;
@@ -11,6 +12,7 @@ class MfNode {
 		this.inboundNodes = inboundNodes;
 		this.outboundNodes = [];
 		this._key = MFNODE_KEY_COUNT;
+		NODE_MAP[this._key] = this;
 		MFNODE_KEY_COUNT ++;
 
 		for (var node of this.inboundNodes) {
@@ -49,14 +51,14 @@ class MfLinear extends MfNode {
 function topologicalSort(nodeList: MfNode[]) {
 	let G = {};
 	let L = [];
-	let nodeMap = {};
+	//let nodeMap = {};
 	let nl = [];
 
 	for (var n of nodeList) nl.push(n);
 
 	while (nl.length > 0) {
 		let n = nl.pop();
-		nodeMap[n._key] = n;
+		//nodeMap[n._key] = n;
 
 		if (G[n._key] == undefined) {
 			G[n._key] = {in : {}, out : {}}
@@ -83,7 +85,7 @@ function topologicalSort(nodeList: MfNode[]) {
 			delete G[n._key]['out'][m._key];
 		
 			if (Object.keys(G[m._key]['in']).length == 0) {
-				nl.push(nodeMap[m._key]);
+				nl.push(NODE_MAP[m._key]);
 			}
 		}
 	}	
