@@ -240,21 +240,21 @@ var records = [
 	{x : 9, y : 19},	
 	{x : 10, y : 21},	
 	{x : 11, y : 23},	
-	{x : 12, y : 25},	
+	/*{x : 12, y : 25},	
 	{x : 13, y : 27},	
 	{x : 14, y : 29},	
 	{x : 15, y : 31},	
-	{x : 16, y : 33},
+	{x : 16, y : 33},*/
 ]
 
 
 
-//var testSet = getTestSet(records, 10);
-var testSet = records;
+var testSet = getTestSet(records, 6);
+//var testSet = records;
 
-var epochs = 80;
+var epochs = 180;
 var stepsPerEpoch = 10;
-var learningRate = 0.01;
+var learningRate = 0.0001;
 
 var trainables = [w1, b1, w2, b2];
 
