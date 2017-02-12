@@ -42,8 +42,6 @@ class MfInput extends MfNode {
 			gra += n.gradients[this._key]
 		}
 		this.gradients[this._key] = gra;
-
-		console.log('###', this.gradients);
 	}
 
 }
@@ -80,27 +78,49 @@ class MfLinear extends MfNode {
 			this.gradients[this.b._key] += cost;
 
 		}
-
-		console.log('$$$', this.gradients);		
 	}
 }
 
-class MfMSE extends MfNode {
-	constructor(actualValueNode : MfNode, predictedValueNode : MfNode) {
-		super([actualValueNode, predictedValueNode]);
+class MfSigmoid extends MfNode {
+	x : MfNode;
+
+	constructor(x : MfNode) {
+		super([x]);
+		this.x = x;
 	}
 
 	forward() : void {
-		let mse = Math.pow((this.inboundNodes[0].value - this.inboundNodes[1].value), 2);
+		this.value = 1 / (1 + Math.exp(-1 * x.value));
+	}
+
+	backward() : void {
+		this.gradients[this.x._key] = 0;
+	
+		for (var n of this.outboundNodes) {
+			let cost = n.gradients[this._key];
+			this.gradients[this.x._key] += this.value * (1 - this.value) * cost;
+		}
+	}
+
+}
+
+class MfMSE extends MfNode {
+	a : MfNode;
+	y : MfNode;
+	constructor(actualValueNode : MfNode, predictedValueNode : MfNode) {
+		super([actualValueNode, predictedValueNode]);
+		this.a = actualValueNode;
+		this.y = predictedValueNode;
+	}
+
+	forward() : void {
+		let mse = Math.pow((this.a.value - this.y.value), 2);
 		this.value = mse;
 	}
 
 	backward() : void {
-		let a = this.inboundNodes[0];
-		let y = this.inboundNodes[1];
-
-		this.gradients[a._key] = y.value - a.value;
-		this.gradients[y._key] = -1. *(y.value - a.value);
+		this.gradients[this.a._key] = this.y.value - this.a.value;
+		this.gradients[this.y._key] = -1. *(this.y.value - this.a.value);
 	}
 
 }
@@ -159,34 +179,54 @@ function forwardAndBackward(graph) {
 		graph[i].backward();
 	}
 }
+
+function sgdUpdate(trainables, learningRate) {
+	for (var tra of trainables) {
+		for (var key in tra.gradients) {
+			//console.log(key, tra.gradients[key], tra.value)
+			tra.value += tra.gradients[key] * learningRate;
+			//console.log('--->', tra.value);
+		}
+	}
+}
 ///// test
 
 
 
-var x = new MfInput(10);
+var x = new MfInput(5);
 var y = new MfInput(15);
 
-var w1 = new MfInput(4);
+var w1 = new MfInput(2);
 var b1 = new MfInput(5);
 
+var lin1 = new MfLinear(x, w1, b1);
+var sig = new MfSigmoid(lin1);
+var mse = new MfMSE(y, sig);
+
+/*
 var w2 = new MfInput(0.1);
 var b2 = new MfInput(0.2);
 
 var w3 = new MfInput(2)
 var b3 = new MfInput(0.6)
-
-var lin1 = new MfLinear(x, w1, b1);
-var lin2 = new MfLinear(lin1, w2, b2);
-var lin3 = new MfLinear(lin2, w3, b3);
-var mse = new MfMSE(y, lin3);
-//var graph = topologicalSort([x, w1, b1, w2, b2, lin1, lin2]);
-var graph = topologicalSort([x, w1, b1, w2, b2, w3, b3, y]);
-forwardAndBackward(graph);
+*/
 
 
-console.log(lin1.value);
-console.log(lin2.value);
-console.log(lin3.value);
-console.log(mse.value);
 
-console.log(mse.gradients);
+//var lin2 = new MfLinear(lin1, w2, b2);
+//var lin3 = new MfLinear(lin2, w3, b3);
+
+//var graph = topologicalSort([x, w1, b1, w2, b2, w3, b3, y]);
+var graph = topologicalSort([x, w1, b1, y, mse]);
+
+var steps = 10;
+var learningRate = 2;
+var trainables = [w1, b1];
+
+for (var i = 0; i < steps; i++) {
+	forwardAndBackward(graph);
+	sgdUpdate(trainables, learningRate);
+
+	console.log('Step', i, 'cost', sig.value, 'val:', w1.value, b1.value);
+
+}
