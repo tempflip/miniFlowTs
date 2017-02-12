@@ -84,13 +84,13 @@ class MfLinear extends MfNode {
 class MfSigmoid extends MfNode {
 	x : MfNode;
 
-	constructor(x : MfNode) {
-		super([x]);
-		this.x = x;
+	constructor(inputNode : MfNode) {
+		super([inputNode]);
+		this.x = inputNode;
 	}
 
 	forward() : void {
-		this.value = 1 / (1 + Math.exp(-1 * x.value));
+		this.value = 1 / (1 + Math.exp(-1 * this.x.value));
 	}
 
 	backward() : void {
@@ -116,6 +116,7 @@ class MfMSE extends MfNode {
 	forward() : void {
 		let mse = Math.pow((this.a.value - this.y.value), 2);
 		this.value = mse;
+		//console.log('a, y', this.a.value, this.y.value);
 	}
 
 	backward() : void {
@@ -194,39 +195,32 @@ function sgdUpdate(trainables, learningRate) {
 
 
 var x = new MfInput(5);
-var y = new MfInput(15);
+var y = new MfInput(11);
 
-var w1 = new MfInput(2);
-var b1 = new MfInput(5);
+var w1 = new MfInput(1);
+var b1 = new MfInput(1);
+
+var w2 = new MfInput(1);
+var b2 = new MfInput(1);
 
 var lin1 = new MfLinear(x, w1, b1);
 var sig = new MfSigmoid(lin1);
-var mse = new MfMSE(y, sig);
+var lin2 = new MfLinear(sig, w2, b2)
+var mse = new MfMSE(y, lin2);
 
-/*
-var w2 = new MfInput(0.1);
-var b2 = new MfInput(0.2);
+var graph = topologicalSort([x, y, w1, b1, w2, b2]);
 
-var w3 = new MfInput(2)
-var b3 = new MfInput(0.6)
-*/
+var epochs = 100;
+var stepsPerEpoch = 1;
+var learningRate = 0.01;
+var trainables = [w1, b1, w2, b2];
 
+for (var i = 0; i < epochs; i++) {
+	for (var c = 0; c < stepsPerEpoch;c++) {
+		forwardAndBackward(graph);
+		sgdUpdate(trainables, learningRate);
+	}
 
-
-//var lin2 = new MfLinear(lin1, w2, b2);
-//var lin3 = new MfLinear(lin2, w3, b3);
-
-//var graph = topologicalSort([x, w1, b1, w2, b2, w3, b3, y]);
-var graph = topologicalSort([x, w1, b1, y, mse, sig]);
-
-var steps = 10;
-var learningRate = 2;
-var trainables = [w1, b1];
-
-for (var i = 0; i < steps; i++) {
-	forwardAndBackward(graph);
-	sgdUpdate(trainables, learningRate);
-
-	console.log('Step', i, 'cost', sig.value, 'val:', w1.value, b1.value);
+	console.log('Step', i, 'COST', mse.value, '\t\tvals:', w1.value, b1.value, w2.value, b2.value);
 
 }
