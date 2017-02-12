@@ -1,0 +1,83 @@
+<html>
+<body>
+	<!--<script src="miniFlow.js"></script>-->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+	<style>
+		.pixel {
+			width: 40px;
+			height: 40px;
+			border: 1px solid black;
+			background: #eeeeee;
+			float : left;
+		} 
+
+		.checked {
+			background: red;
+		}
+
+		.row {
+			clear: both;
+		}
+	</style>
+
+	<div id="canvas">
+
+	</div>
+
+	<div style="clear: both;">
+		Current props:
+		<div id="props">
+
+		</div>
+	</div>
+
+	<script>
+		var props = [0,0,0,0,
+					 0,0,0,0,
+					 0,0,0,0,
+					 0,0,0,0];
+
+		$(document).ready(function() {
+			buildButtons();
+			showProps();
+			$('.pixel').click(onPixelClick);
+		});
+
+		function buildButtons() {
+			var y = 4;
+			var x = 4;
+
+			var c = 0;
+			for (var i = 0; i < y; i++) {
+				var row = $('<div class="row"></div>');
+				for (var j = 0; j < x; j++) {
+					var pix = $('<div class="pixel" pixid="' + c + '"">x</div>');
+					row.append(pix);
+					c++;
+				}
+				$('#canvas').append(row);
+			}
+		}
+
+		function onPixelClick(e) {
+			var id = $(this).attr('pixid');
+			var state = props[id];
+			if (state == 0) {
+				props[id] = 1;
+				$(this).addClass('checked');
+			} else {
+				props[id] = 0;
+				$(this).removeClass('checked');
+			}
+			showProps();
+			console.log(props);
+		}
+
+		function showProps() {
+			$('#props').text(JSON.stringify(props));
+		}
+
+	</script>
+</body>
+</html>
