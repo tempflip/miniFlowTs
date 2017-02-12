@@ -268,13 +268,16 @@ var w3 = new MfInput(6);
 var b3 = new MfInput(6);
 var lin3 = new MfLinear(x3, w3, b3);
 
-
 var com = new MfCombine([lin1, lin2, lin3])
 
-var y = new MfInput(17);
-var mse = new MfMSE(y, com);
+var w4 = new MfInput(6.1);
+var b4 = new MfInput(0.5);
+var lin4 = new MfLinear(com, w4, b4);
 
-var graph = topologicalSort([x1, x2, w1, w2, w3, b1, b2, b3]);
+var y = new MfInput(17);
+var mse = new MfMSE(y, lin4);
+
+var graph = topologicalSort([x1, x2, w1, w2, w3, w4, b1, b2, b3, b3]);
 
 
 var epochs = 10;
