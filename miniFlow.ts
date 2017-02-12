@@ -217,7 +217,7 @@ var b3 = new MfInput(0.6)
 //var lin3 = new MfLinear(lin2, w3, b3);
 
 //var graph = topologicalSort([x, w1, b1, w2, b2, w3, b3, y]);
-var graph = topologicalSort([x, w1, b1, y, mse]);
+var graph = topologicalSort([x, w1, b1, y, mse, sig]);
 
 var steps = 10;
 var learningRate = 2;
