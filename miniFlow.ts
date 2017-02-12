@@ -250,53 +250,133 @@ function buildInputs(record) {
 }
 ///// test
 
+var records = [
+	{
+		val : 1,
+		props : [1,0,0,1,
+				 0,1,1,0, 
+				 0,1,1,0, 
+				 1,0,0,1]
+	},
+	{
+		val : 1,
+		props : [1,0,0,1,
+				 0,1,0,0, 
+				 0,1,1,0, 
+				 1,0,0,1]
+	},
+	{
+		val : 1,
+		props : [1,0,0,1,
+				 0,1,0,1, 
+				 0,1,1,0, 
+				 0,0,0,1]
+	},	
+	{
+		val : 0,
+		props : [1,1,1,1,
+				 1,0,0,1, 
+				 1,0,0,1, 
+				 1,1,1,1]
+	},
+	{
+		val : 0,
+		props : [0,1,1,0,
+				 1,0,0,1, 
+				 1,0,0,1, 
+				 0,1,1,0]
+	},
+	{
+		val : 0,
+		props : [0,1,1,1,
+				 1,0,0,1, 
+				 1,0,0,1, 
+				 1,1,1,0]
+	},
+	{
+		val : 0,
+		props : [0,1,1,1,
+				 0,1,0,1, 
+				 0,1,0,1, 
+				 0,1,1,0]
+	},
+
+]
+
+function buildNet(records) {
+	var net = [];
+	var inputs = [];
+	var trainables =[];
+	var lins = [];
+	for (var prop in records[0].props) {
+		var x = new MfInput(Math.random());
+		var w = new MfInput(Math.random());
+		var b = new MfInput(Math.random());
+		var lin = new MfLinear(x, w, b);
+
+		net.push(x, w, b, lin);
+		inputs.push(x);
+		lins.push(lin);
+		trainables.push(w, b);
+	}
+
+	var result = new MfCombine(lins);
+	//var result = new MfSigmoid(com);
+	var y = new MfInput(Math.random());
+	var mse = new MfMSE(y, result);
+
+	net.push(result, y, mse);
+
+	return {
+		net : net,
+		graph : topologicalSort(net),
+		inputs : inputs,
+		trainables : trainables,
+		mse : mse,
+		y : y,
+		result : result
+	}
+}
+
+function feedNet(net, props) {
+	for (var propIndex = 0; propIndex < props.length; propIndex ++) {
+		net.inputs[propIndex].value = props[propIndex];
+	}	
+}
+
+var net = buildNet(records);
 
 
-var x1 = new MfInput(5);
-var x2 = new MfInput(10);
-var x3 = new MfInput(4);
-
-var w1 = new MfInput(0.1);
-var b1 = new MfInput(0.5);
-var lin1 = new MfLinear(x1, w1, b1);
-
-var w2 = new MfInput(2);
-var b2 = new MfInput(5);
-var lin2 = new MfLinear(x2, w2, b2);
-
-var w3 = new MfInput(6);
-var b3 = new MfInput(6);
-var lin3 = new MfLinear(x3, w3, b3);
-
-var com = new MfCombine([lin1, lin2, lin3])
-
-var w4 = new MfInput(6.1);
-var b4 = new MfInput(0.5);
-var lin4 = new MfLinear(com, w4, b4);
-
-var y = new MfInput(17);
-var mse = new MfMSE(y, lin4);
-
-var graph = topologicalSort([x1, x2, w1, w2, w3, w4, b1, b2, b3, b3]);
+var epochs = 30;
+var stepsPerEpoch = 100;
+var learningRate = 0.001;
 
 
-var epochs = 10;
-var stepsPerEpoch = 1;
-var learningRate = 0.01;
-
-var trainables = [w1, b1, w2, b2, w3, b3];
 
 for (var i = 0; i < epochs; i++) {
 	for (var s = 0; s < stepsPerEpoch; s++) { 
-		//for (var rec of testSet) {
-			//x.value = rec.x;
-			//y.value = rec.y;
-			forwardAndBackward(graph);
-			sgdUpdate(trainables, learningRate);
-		//}
+		for (var rec of records) {
+			feedNet(net, rec.props);
+			net.y.value = rec.val;
+
+			forwardAndBackward(net.graph);
+			sgdUpdate(net.trainables, learningRate);
+		}
 	}
 
-	console.log('Epoch: ', i, 'COST: ', mse.value, '\t');
+	console.log('Epoch: ', i, 'COST: ', net.mse.value, '\t');
 }
 
-console.log(w1.value, b1.value, w2.value, w2.value, w3.value, b3.value);
+//tests
+////////////////////
+
+for (var rec of records) {
+	feedNet(net, rec.props);
+	forwardGraph(net.graph);
+	//console.log('rec: ', rec.props);
+	console.log('val: ', rec.val);
+	console.log('val: ', net.result.value);
+	console.log('----------------------');
+
+}
+
