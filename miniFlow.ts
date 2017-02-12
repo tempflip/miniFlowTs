@@ -217,6 +217,8 @@ function forwardAndBackward(graph) {
 
 function sgdUpdate(trainables, learningRate) {
 	for (var tra of trainables) {
+
+
 		for (var key in tra.gradients) {
 			//console.log(key, tra.gradients[key], tra.value)
 			tra.value += tra.gradients[key] * learningRate;
@@ -252,64 +254,30 @@ function buildInputs(record) {
 
 var x1 = new MfInput(5);
 var x2 = new MfInput(10);
+var x3 = new MfInput(4);
 
-var w1 = new MfInput(2);
-var b1 = new MfInput(2);
+var w1 = new MfInput(0.1);
+var b1 = new MfInput(0.5);
 var lin1 = new MfLinear(x1, w1, b1);
 
 var w2 = new MfInput(2);
-var b2 = new MfInput(2);
+var b2 = new MfInput(5);
 var lin2 = new MfLinear(x2, w2, b2);
 
-var sig1 = new MfSigmoid(lin1);
-var sig2 = new MfSigmoid(lin2);
-
-var com = new MfCombine([sig1, sig2])
-
-var w3 = new MfInput(2);
-var b3 = new MfInput(2);
-var lin3 = new MfLinear(com, w3, b3);
-var sig3 = new MfSigmoid(lin3);
+var w3 = new MfInput(6);
+var b3 = new MfInput(6);
+var lin3 = new MfLinear(x3, w3, b3);
 
 
-var y = new MfInput(100);
-var mse = new MfMSE(y, lin3);
+var com = new MfCombine([lin1, lin2, lin3])
+
+var y = new MfInput(17);
+var mse = new MfMSE(y, com);
+
+var graph = topologicalSort([x1, x2, w1, w2, w3, b1, b2, b3]);
 
 
-var graph = topologicalSort([x1, x2, y, w1, b1, w3, b3]);
-
-
-/*
-var records = [
-	{
-		val : 1,
-		props : [
-			1,0,0,1,
-			0,0,1,0,
-			0,1,1,0,
-			1,0,0,1,
-		]
-	},
-	{
-		val : 0,
-		props : [
-			1,1,1,1,
-			1,0,0,1,
-			1,0,0,1,
-			1,1,1,1,
-		]
-	},
-];
-*/
-
-//var inputs = buildInputs(records[0]);
-
-
-
-
-
-
-var epochs = 50;
+var epochs = 10;
 var stepsPerEpoch = 1;
 var learningRate = 0.01;
 
@@ -320,21 +288,12 @@ for (var i = 0; i < epochs; i++) {
 		//for (var rec of testSet) {
 			//x.value = rec.x;
 			//y.value = rec.y;
-
 			forwardAndBackward(graph);
 			sgdUpdate(trainables, learningRate);
 		//}
 	}
 
-	console.log('Epoch: ', i, 'COST: ', mse.value, '\t', w1.value, b1.value, w2.value, b2.value, w3.value, b3.value);
+	console.log('Epoch: ', i, 'COST: ', mse.value, '\t');
 }
 
-/*
-for (var r of records) {
-	x.value = r.x;
-	forwardGraph(graph);
-
-	var result = lin2.value;
-	console.log('X: ', r.x, '\tcorrect: ', r.y, '\tpredicted: ', result, '\tError: ', r.y - result);
-}
-*/
+console.log(w1.value, b1.value, w2.value, w2.value, w3.value, b3.value);
