@@ -81,6 +81,36 @@ class MfLinear extends MfNode {
 	}
 }
 
+class MfCombine extends MfNode {
+	nodeList : MfNode[];
+
+	constructor(nodeList : MfNode[]) {
+		super(nodeList);
+		this.nodeList = nodeList;
+	}
+
+	forward() : void {
+		let v = 0;
+		for (var n of this.nodeList) {
+			v += n.value;
+		}
+		this.value = v;
+	}
+
+	backward() : void {
+		for (var inBoundNode of this.nodeList) {
+			this.gradients[inBoundNode._key] = 0;
+		}
+
+		for (var n of this.outboundNodes) {
+			let cost = n.gradients[this._key];
+			for (var inBoundNode of this.nodeList) {
+				this.gradients[inBoundNode._key] += cost;
+			}
+		}
+	}	
+}
+
 class MfSigmoid extends MfNode {
 	x : MfNode;
 
@@ -208,70 +238,98 @@ function getTestSet(records, c) {
 
 	return testSet;
 }
+
+function buildInputs(record) {
+	var inputs = [];
+	for (var prop of record.props) {
+		inputs.push(new MfInput(0));
+	}
+	return inputs;
+}
 ///// test
 
 
 
-var x = new MfInput(5);
-var y = new MfInput(11);
+var x1 = new MfInput(5);
+var x2 = new MfInput(10);
 
-var w1 = new MfInput(1);
-var b1 = new MfInput(1);
+var w1 = new MfInput(2);
+var b1 = new MfInput(2);
+var lin1 = new MfLinear(x1, w1, b1);
 
-var w2 = new MfInput(1);
-var b2 = new MfInput(1);
+var w2 = new MfInput(2);
+var b2 = new MfInput(2);
+var lin2 = new MfLinear(x2, w2, b2);
 
-var lin1 = new MfLinear(x, w1, b1);
-var sig = new MfSigmoid(lin1);
-var lin2 = new MfLinear(sig, w2, b2)
-var mse = new MfMSE(y, lin2);
+var sig1 = new MfSigmoid(lin1);
+var sig2 = new MfSigmoid(lin2);
 
-var graph = topologicalSort([x, y, w1, b1, w2, b2]);
+var com = new MfCombine([sig1, sig2])
+
+var w3 = new MfInput(2);
+var b3 = new MfInput(2);
+var lin3 = new MfLinear(com, w3, b3);
+var sig3 = new MfSigmoid(lin3);
 
 
+var y = new MfInput(100);
+var mse = new MfMSE(y, lin3);
+
+
+var graph = topologicalSort([x1, x2, y, w1, b1, w3, b3]);
+
+
+/*
 var records = [
-	{x : 2, y : 5},
-	{x : 3, y : 7},
-	{x : 4, y : 9},
-	{x : 5, y : 11},
-	{x : 6, y : 13},
-	{x : 7, y : 15},
-	{x : 8, y : 17},
-	{x : 9, y : 19},	
-	{x : 10, y : 21},	
-	{x : 11, y : 23},	
-	/*{x : 12, y : 25},	
-	{x : 13, y : 27},	
-	{x : 14, y : 29},	
-	{x : 15, y : 31},	
-	{x : 16, y : 33},*/
-]
+	{
+		val : 1,
+		props : [
+			1,0,0,1,
+			0,0,1,0,
+			0,1,1,0,
+			1,0,0,1,
+		]
+	},
+	{
+		val : 0,
+		props : [
+			1,1,1,1,
+			1,0,0,1,
+			1,0,0,1,
+			1,1,1,1,
+		]
+	},
+];
+*/
+
+//var inputs = buildInputs(records[0]);
 
 
 
-var testSet = getTestSet(records, 6);
-//var testSet = records;
 
-var epochs = 180;
-var stepsPerEpoch = 10;
-var learningRate = 0.0001;
 
-var trainables = [w1, b1, w2, b2];
+
+var epochs = 50;
+var stepsPerEpoch = 1;
+var learningRate = 0.01;
+
+var trainables = [w1, b1, w2, b2, w3, b3];
 
 for (var i = 0; i < epochs; i++) {
 	for (var s = 0; s < stepsPerEpoch; s++) { 
-		for (var rec of testSet) {
-			x.value = rec.x;
-			y.value = rec.y;
+		//for (var rec of testSet) {
+			//x.value = rec.x;
+			//y.value = rec.y;
 
 			forwardAndBackward(graph);
 			sgdUpdate(trainables, learningRate);
-		}
+		//}
 	}
 
-	console.log('Epoch: ', i, 'COST: ', mse.value);
+	console.log('Epoch: ', i, 'COST: ', mse.value, '\t', w1.value, b1.value, w2.value, b2.value, w3.value, b3.value);
 }
 
+/*
 for (var r of records) {
 	x.value = r.x;
 	forwardGraph(graph);
@@ -279,3 +337,4 @@ for (var r of records) {
 	var result = lin2.value;
 	console.log('X: ', r.x, '\tcorrect: ', r.y, '\tpredicted: ', result, '\tError: ', r.y - result);
 }
+*/
