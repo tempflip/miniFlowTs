@@ -171,10 +171,14 @@ function topologicalSort(nodeList: MfNode[]) {
 	return L;
 }
 
-function forwardAndBackward(graph) {
+function forwardGraph(graph) {
 	for (var n of graph) {
 		n.forward();
 	}
+}
+
+function forwardAndBackward(graph) {
+	forwardGraph(graph);
 
 	for (var i = graph.length-1 ; i >= 0; i--) {
 		graph[i].backward();
@@ -189,6 +193,20 @@ function sgdUpdate(trainables, learningRate) {
 			//console.log('--->', tra.value);
 		}
 	}
+}
+
+function getTestSet(records, c) {
+	var testSet = [];
+	var usedKeys = {};
+	
+	while (testSet.length < c) {
+		var k = Math.floor(Math.random() * records.length);
+		if (usedKeys[k] == 1) continue;
+		usedKeys[k] = 1;
+		testSet.push(records[k]);
+	}
+
+	return testSet;
 }
 ///// test
 
@@ -210,17 +228,54 @@ var mse = new MfMSE(y, lin2);
 
 var graph = topologicalSort([x, y, w1, b1, w2, b2]);
 
-var epochs = 100;
-var stepsPerEpoch = 1;
+
+var records = [
+	{x : 2, y : 5},
+	{x : 3, y : 7},
+	{x : 4, y : 9},
+	{x : 5, y : 11},
+	{x : 6, y : 13},
+	{x : 7, y : 15},
+	/*{x : 8, y : 17},
+	{x : 9, y : 19},	
+	{x : 10, y : 21},	
+	{x : 11, y : 23},	
+	{x : 12, y : 25},	
+	{x : 13, y : 27},	
+	{x : 14, y : 29},	
+	{x : 15, y : 31},	
+	{x : 16, y : 33},	*/
+]
+
+
+
+//var testSet = getTestSet(records, 10);
+var testSet = records;
+
+var epochs = 80;
+var stepsPerEpoch = 10;
 var learningRate = 0.01;
+
 var trainables = [w1, b1, w2, b2];
 
 for (var i = 0; i < epochs; i++) {
-	for (var c = 0; c < stepsPerEpoch;c++) {
-		forwardAndBackward(graph);
-		sgdUpdate(trainables, learningRate);
+	for (var s = 0; s < stepsPerEpoch; s++) { 
+		for (var rec of testSet) {
+			x.value = rec.x;
+			y.value = rec.y;
+
+			forwardAndBackward(graph);
+			sgdUpdate(trainables, learningRate);
+		}
 	}
 
-	console.log('Step', i, 'COST', mse.value, '\t\tvals:', w1.value, b1.value, w2.value, b2.value);
+	console.log('Epoch: ', i, 'COST: ', mse.value);
+}
 
+for (var r of records) {
+	x.value = r.x;
+	forwardGraph(graph);
+
+	var result = lin2.value;
+	console.log('X: ', r.x, '\tcorrect: ', r.y, '\tpredicted: ', result, '\tError: ', r.y - result);
 }
