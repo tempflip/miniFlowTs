@@ -1,6 +1,6 @@
 <html>
 <body>
-	<!--<script src="miniFlow.js"></script>-->
+	<script src="miniFlow.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 
 	<style>
@@ -21,6 +21,10 @@
 		}
 	</style>
 
+	<div id="loading">
+		I'm training myself! A couple of seconds.....
+	</div>
+
 	<div id="canvas">
 
 	</div>
@@ -32,6 +36,14 @@
 		</div>
 	</div>
 
+	<div>
+		<button id="predictButton">Predict!</button>
+	</div>
+
+	<div id="prediction">
+
+	</div>
+
 	<script>
 		var props = [0,0,0,0,
 					 0,0,0,0,
@@ -41,7 +53,9 @@
 		$(document).ready(function() {
 			buildButtons();
 			showProps();
+			$('#loading').hide();
 			$('.pixel').click(onPixelClick);
+			$('#predictButton').click(predict);
 		});
 
 		function buildButtons() {
@@ -52,7 +66,7 @@
 			for (var i = 0; i < y; i++) {
 				var row = $('<div class="row"></div>');
 				for (var j = 0; j < x; j++) {
-					var pix = $('<div class="pixel" pixid="' + c + '"">x</div>');
+					var pix = $('<div class="pixel" pixid="' + c + '"">click</div>');
 					row.append(pix);
 					c++;
 				}
@@ -71,11 +85,25 @@
 				$(this).removeClass('checked');
 			}
 			showProps();
-			console.log(props);
 		}
 
 		function showProps() {
 			$('#props').text(JSON.stringify(props));
+		}
+
+		function predict() {
+			console.log(props);
+			feedNet(net, props);
+			forwardGraph(net.graph);
+			var val = net.result.value;
+			console.log(val);
+
+			if (val > 0.5) {
+				alert('I think it is an X.');
+			} else {
+				alert('I think it is a 0');
+			}
+
 		}
 
 	</script>
