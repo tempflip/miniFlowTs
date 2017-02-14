@@ -1,7 +1,7 @@
 var MFNODE_KEY_COUNT = 0;
 var NODE_MAP = {};
 
-class MfNode {
+export class MfNode {
 	_key : number;
 	value : number;
 	inboundNodes : MfNode[];
@@ -29,7 +29,7 @@ class MfNode {
 
 }
 
-class MfInput extends MfNode {
+export class MfInput extends MfNode {
 
 	constructor(value : number) {
 		super([]);
@@ -46,7 +46,7 @@ class MfInput extends MfNode {
 
 }
 
-class MfLinear extends MfNode {
+export class MfLinear extends MfNode {
 	x : MfNode;
 	w : MfNode;
 	b : MfNode;
@@ -81,7 +81,7 @@ class MfLinear extends MfNode {
 	}
 }
 
-class MfCombine extends MfNode {
+export class MfCombine extends MfNode {
 	nodeList : MfNode[];
 
 	constructor(nodeList : MfNode[]) {
@@ -111,7 +111,7 @@ class MfCombine extends MfNode {
 	}	
 }
 
-class MfSigmoid extends MfNode {
+export class MfSigmoid extends MfNode {
 	x : MfNode;
 
 	constructor(inputNode : MfNode) {
@@ -134,7 +134,7 @@ class MfSigmoid extends MfNode {
 
 }
 
-class MfMSE extends MfNode {
+export class MfMSE extends MfNode {
 	a : MfNode;
 	y : MfNode;
 	constructor(actualValueNode : MfNode, predictedValueNode : MfNode) {
@@ -156,10 +156,9 @@ class MfMSE extends MfNode {
 
 }
 
-function topologicalSort(nodeList: MfNode[]) {
+export function topologicalSort(nodeList: MfNode[]) {
 	let G = {};
 	let L = [];
-	//let nodeMap = {};
 	let nl = [];
 
 	for (var n of nodeList) nl.push(n);
@@ -181,7 +180,6 @@ function topologicalSort(nodeList: MfNode[]) {
 			nl.push(m)
 		}
 	}
-	//console.log(G);
 
 	for (var n of nodeList) nl.push(n);
 
@@ -197,17 +195,16 @@ function topologicalSort(nodeList: MfNode[]) {
 			}
 		}
 	}	
-	//console.log(L);
 	return L;
 }
 
-function forwardGraph(graph) {
+export function forwardGraph(graph) {
 	for (var n of graph) {
 		n.forward();
 	}
 }
 
-function forwardAndBackward(graph) {
+export function forwardAndBackward(graph) {
 	forwardGraph(graph);
 
 	for (var i = graph.length-1 ; i >= 0; i--) {
@@ -215,7 +212,7 @@ function forwardAndBackward(graph) {
 	}
 }
 
-function sgdUpdate(trainables, learningRate) {
+export function sgdUpdate(trainables, learningRate) {
 	for (var tra of trainables) {
 
 
@@ -225,177 +222,5 @@ function sgdUpdate(trainables, learningRate) {
 			//console.log('--->', tra.value);
 		}
 	}
-}
-
-function getTestSet(records, c) {
-	var testSet = [];
-	var usedKeys = {};
-	
-	while (testSet.length < c) {
-		var k = Math.floor(Math.random() * records.length);
-		if (usedKeys[k] == 1) continue;
-		usedKeys[k] = 1;
-		testSet.push(records[k]);
-	}
-
-	return testSet;
-}
-
-function buildInputs(record) {
-	var inputs = [];
-	for (var prop of record.props) {
-		inputs.push(new MfInput(0));
-	}
-	return inputs;
-}
-///// test
-
-var setX = [
-	[1,0,0,0,0,1,0,1,0,0,1,0,0,0,1,1,0,0,0,0,0,1,0,0,0,1,0,0,1,0,1,0,0,0,0,1],
-	[0,1,0,0,0,1,0,1,0,0,1,0,0,0,1,1,0,0,0,0,1,1,0,0,0,1,0,0,1,0,0,1,0,0,0,1],
-	[1,0,0,0,1,0,1,0,0,0,1,0,0,1,0,1,0,0,0,0,1,1,0,0,0,1,0,0,1,0,1,1,0,0,0,1],
-	[1,1,1,0,0,1,0,0,1,0,1,0,0,0,0,1,0,0,0,0,1,1,0,0,0,1,0,0,1,0,0,0,0,0,0,1],
-	[1,1,0,0,0,1,0,1,1,0,1,0,0,0,1,1,0,0,0,0,1,1,0,0,1,1,0,0,1,1,0,0,0,0,0,0],
-	[0,0,0,0,0,0,1,0,0,0,1,0,0,1,0,1,0,0,0,0,1,0,0,0,0,1,0,1,0,0,1,0,0,0,1,0],
-	[0,1,0,0,1,0,0,1,1,0,1,0,0,0,1,1,0,0,0,0,1,1,0,0,0,1,0,0,1,0,0,1,0,0,1,0],
-	[0,0,1,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0],
-	[0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,1,1,1,1,1,0,0,0,1,0,0,0,0,0,1,0,0,0],
-	[0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0],
-	[0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,1,1,1,1,0,0,0,0,1,0,0,0,0,0,1,0,0,0],
-	[0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1,1,1,1,1,1,0,0,1,0,0,0,0,0,1,0,0,0],
-	[0,0,0,0,1,0,0,0,0,0,1,0,0,0,1,1,1,1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0],
-	[0,0,0,0,1,0,0,0,0,0,1,0,0,1,1,1,1,1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0],
-	[0,0,0,0,1,0,0,0,0,0,1,0,1,1,1,1,1,1,0,0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,1,0],
-	[0,0,0,1,0,0,0,0,0,1,0,0,1,1,1,1,1,1,0,0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,1,0],
-	[0,0,0,1,0,0,0,0,0,1,0,0,1,1,1,1,1,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
-	[0,0,0,1,0,0,0,0,0,1,0,0,0,0,1,1,1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
-	[0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-	[0,0,1,1,0,0,0,0,1,1,0,0,1,1,1,1,1,1,0,0,1,1,0,0,0,0,1,1,0,0,0,0,1,0,0,0],
-	[0,0,1,1,0,0,0,0,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,0,0,0,0,1,1,0,0],
-	[0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,1,0,1,1,1,1,1,1,1,1,0,0,1,0,0,0,0,1,1,0,0],
-	[0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,1,0,1,1,1,1,1,0,0,0,1,0,0,0,0,1,1,0,0],
-	[1,0,1,0,0,0,0,1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-	[1,1,0,1,1,1,0,1,0,1,0,0,0,0,1,1,0,0,0,1,1,1,0,0,0,1,0,0,1,0,1,0,0,0,1,1],
-	[0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,1,1,1,0,1,0,0,0,0,1,1,0,0,0,1,0,0,1,1],
-	[0,0,0,0,0,0,1,0,0,0,0,1,1,1,1,0,1,1,0,0,1,1,0,0,0,0,1,1,0,0,1,1,0,0,1,1],
-	[0,0,1,0,0,1,0,0,1,0,1,1,0,0,1,0,1,0,0,1,1,1,1,0,1,1,1,0,0,0,0,0,1,0,0,0],
-
-];
-var set0 = [
-	[1,1,1,1,1,1,1,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,1,1,1,1,1,1,1],
-	[1,1,1,1,1,0,1,0,0,0,1,0,1,0,0,0,1,1,1,0,0,0,0,1,1,1,0,0,0,1,0,1,1,1,1,1],
-	[0,1,1,1,0,0,1,1,0,1,1,0,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,0,1,1,0,1,1,1,0,0],
-	[0,0,0,0,0,0,0,1,1,1,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,1,1,1,0],
-	[0,0,0,0,0,0,0,1,1,1,1,0,1,1,0,0,1,1,1,0,0,0,0,1,0,1,1,1,1,1,0,0,0,0,0,0],
-	[0,1,1,1,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,0,1,1,0,0,0,0,0,0,0,0],
-	[0,0,1,1,1,0,1,1,1,0,1,1,1,0,0,0,0,1,1,1,0,0,1,0,1,1,1,1,1,0,0,0,1,1,0,0],
-	[1,1,1,1,1,1,1,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,1,1,0,1,1,1,1,1,1,1,0,0,0],
-	[1,1,1,0,0,0,1,0,1,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-	[1,1,1,1,0,0,1,0,0,1,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-	[1,1,1,1,1,0,1,0,0,0,1,0,1,1,0,1,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-	[1,1,1,1,1,0,1,0,0,0,1,0,1,1,0,1,1,0,0,1,0,1,0,0,0,0,1,1,0,0,0,0,0,0,0,0],
-	[1,1,1,1,1,0,1,0,0,0,1,0,1,0,0,1,1,0,1,0,0,1,0,0,1,1,1,1,0,0,0,0,0,0,0,0],
-	[1,1,1,1,1,0,1,0,0,0,1,0,1,0,0,0,1,0,1,0,0,0,1,0,1,1,1,1,1,0,0,0,0,0,0,0],
-	[1,1,1,1,1,0,1,0,0,0,1,1,1,0,0,0,0,1,1,0,0,0,1,1,1,1,0,1,1,0,0,1,1,0,0,0],
-	[0,0,0,1,1,0,1,1,1,1,1,1,1,1,0,0,0,1,1,0,0,0,1,1,1,1,0,1,1,0,0,1,1,1,0,0],
-	[0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,0,0,1,1,1,1,0,1,1,0,0,1,1,1,0,0],
-	[0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,1,1,0,0,0,1,1,1,0,0,1,1,0,0,1,1,1,0,0],
-	[0,0,0,0,0,0,0,0,1,1,1,1,0,1,1,0,0,1,0,1,0,0,1,1,0,1,0,1,1,0,0,1,1,1,0,0],
-	[0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,1,0,0,1,1,0,1,0,1,1,0,0,1,1,1,0,0],
-	[0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,1,0,0,1,0,0,1,0,1,1,0,0,1,1,1,0,0],
-	[0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,1,0,1,0,0,0,1,0,1,0,0,0,1,1,1,0,0],
-	[0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,1,0,1,0,0,0,1,1,1,0,0,0,1,0,0,0,0],
-	[0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,1,0,0,1,0,0,1,0,1,1,0,0,1,1,1,0,0,0],
-	[0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,1,0,0,0,0,1,1,0,0,0,0,1,1,1,1,1,1,0],
-	[0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,1,0,0,0,0,1,1,0,0,0,0,1,0,1,1,1,1,0],
-	[0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,1,1,0,0,1,1,1,1,0,0,1,1,0,1,1,1,1,0],
-	[0,0,0,0,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,1,0,0,1,1,1,1,1,1,1,1],
-
-];
-
-var records = [];
-for (var e of setX) {
-	records.push({val : 1, props : e});
-}
-for (var e of set0) {
-	records.push({val : 0, props : e});
-}
-
-function buildNet(records) {
-	var net = [];
-	var inputs = [];
-	var trainables =[];
-	var lins = [];
-	for (var prop in records[0].props) {
-		var x = new MfInput(Math.random());
-		var w = new MfInput(Math.random());
-		var b = new MfInput(Math.random());
-		var lin = new MfLinear(x, w, b);
-
-		net.push(x, w, b, lin);
-		inputs.push(x);
-		lins.push(lin);
-		trainables.push(w, b);
-	}
-
-	var result = new MfCombine(lins);
-	//var result = new MfSigmoid(com);
-	var y = new MfInput(Math.random());
-	var mse = new MfMSE(y, result);
-
-	net.push(result, y, mse);
-
-	return {
-		net : net,
-		graph : topologicalSort(net),
-		inputs : inputs,
-		trainables : trainables,
-		mse : mse,
-		y : y,
-		result : result
-	}
-}
-
-function feedNet(net, props) {
-	for (var propIndex = 0; propIndex < props.length; propIndex ++) {
-		net.inputs[propIndex].value = props[propIndex];
-	}	
-}
-
-var net = buildNet(records);
-
-
-var epochs = 40;
-var stepsPerEpoch = 20;
-var learningRate = 0.001;
-
-
-
-for (var i = 0; i < epochs; i++) {
-	for (var s = 0; s < stepsPerEpoch; s++) { 
-		var trainSet = getTestSet(records, records.length * 1);
-		for (var rec of trainSet) {
-			feedNet(net, rec.props);
-			net.y.value = rec.val;
-
-			forwardAndBackward(net.graph);
-			sgdUpdate(net.trainables, learningRate);
-		}
-	}
-
-	console.log('Epoch: ', i, 'COST: ', net.mse.value, '\t');
-}
-
-//tests
-////////////////////
-
-for (var rec of records) {
-	feedNet(net, rec.props);
-	forwardGraph(net.graph);
-	//console.log('rec: ', rec.props);
-	//console.log('val: ', rec.val, net.result.value);
-	//console.log('val: ', net.result.value);
-	//console.log('----------------------');
-
 }
 
