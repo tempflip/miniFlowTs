@@ -53,9 +53,6 @@ var MfLinear = (function (_super) {
         return _this;
     }
     MfLinear.prototype.forward = function () {
-        //let x = this.inboundNodes[0].value;
-        //let w = this.inboundNodes[1].value;
-        //let b = this.inboundNodes[2].value;
         this.value = this.x.value * this.w.value + this.b.value;
     };
     MfLinear.prototype.backward = function () {
@@ -137,7 +134,6 @@ var MfMSE = (function (_super) {
     MfMSE.prototype.forward = function () {
         var mse = Math.pow((this.a.value - this.y.value), 2);
         this.value = mse;
-        //console.log('a, y', this.a.value, this.y.value);
     };
     MfMSE.prototype.backward = function () {
         this.gradients[this.a._key] = this.y.value - this.a.value;
@@ -156,7 +152,6 @@ function topologicalSort(nodeList) {
     }
     while (nl.length > 0) {
         var n_1 = nl.pop();
-        //nodeMap[n._key] = n;
         if (G[n_1._key] == undefined) {
             G[n_1._key] = { "in": {}, out: {} };
         }
@@ -207,7 +202,6 @@ function sgdUpdate(trainables, learningRate) {
     for (var _i = 0, trainables_1 = trainables; _i < trainables_1.length; _i++) {
         var tra = trainables_1[_i];
         for (var key in tra.gradients) {
-            //console.log(key, tra.gradients[key], tra.value)
             tra.value += tra.gradients[key] * learningRate;
         }
     }
