@@ -20,7 +20,8 @@ The main TypeScript file (miniFlow.ts) is useable as-it-is, or can be compiled t
 The example below creates a single Linear node; feeds it with 3 input values (x, weight and bias).
 After this, it build the graph using the `topologicalSort` method.
 `w` and `b` parameters are declared as trainables, so they are updated in every step (see the for-loop).
-In every step a full forward-and 
+In every step a full forward-and-backward cycle is running, which updates the values of the nodes.
+After this, the `sgdUpdate` function 'pulls' the parameter in the direction of the gradients, so this way the MSE error becames lower step-by-step.
 
 ```
 import * as mf from './miniFlow';
