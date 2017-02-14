@@ -59,9 +59,6 @@ export class MfLinear extends MfNode {
 	}
 
 	forward() : void {
-		//let x = this.inboundNodes[0].value;
-		//let w = this.inboundNodes[1].value;
-		//let b = this.inboundNodes[2].value;
 		this.value = this.x.value * this.w.value + this.b.value;
 	}
 
@@ -146,7 +143,6 @@ export class MfMSE extends MfNode {
 	forward() : void {
 		let mse = Math.pow((this.a.value - this.y.value), 2);
 		this.value = mse;
-		//console.log('a, y', this.a.value, this.y.value);
 	}
 
 	backward() : void {
@@ -165,7 +161,6 @@ export function topologicalSort(nodeList: MfNode[]) {
 
 	while (nl.length > 0) {
 		let n = nl.pop();
-		//nodeMap[n._key] = n;
 
 		if (G[n._key] == undefined) {
 			G[n._key] = {in : {}, out : {}}
@@ -215,11 +210,8 @@ export function forwardAndBackward(graph) {
 export function sgdUpdate(trainables, learningRate) {
 	for (var tra of trainables) {
 
-
 		for (var key in tra.gradients) {
-			//console.log(key, tra.gradients[key], tra.value)
 			tra.value += tra.gradients[key] * learningRate;
-			//console.log('--->', tra.value);
 		}
 	}
 }
